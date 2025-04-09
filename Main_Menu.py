@@ -70,13 +70,15 @@ class CardImage():
 
         self.rect = self.image.get_rect(center=(self.xCord, self.yCord))
 
+    # Function that updates the screen with the Images, using blit fro pygame to put the Image of the card and its rectangle that allows for future processing around it
     def Update(self):
         if self.image is not None:
             screen.blit(self.image, self.rect)
 
 
 
-
+# Function that gets the file path from the Operating system for the other python file (the Main BlackJack game)
+# Then executes the file as the BlackJack file has a main game loop that isnt in a function and so the whole file has to be executed
 def BlackJack():
     BlackjackFilePath = os.path.join(os.path.dirname(__file__), 'BlackJack.py')
     exec(compile(open(BlackjackFilePath).read(), BlackjackFilePath, 'exec'), globals())
@@ -85,6 +87,8 @@ def BlackJack():
 # ----------------------------------------Database Functions----------------------------------------
 
 
+# Function that looks through the Data.db database and fetches all the Subjects from it and puts them into a array that I can call and manipulate later.
+# Then returns this array
 def fetchSubjectsFromDatabase():
     connection = sqlite3.connect('Data.db')  
     cursor = connection.cursor()
@@ -96,6 +100,9 @@ def fetchSubjectsFromDatabase():
     return [subject[0] for subject in subjects]  
 
 
+# Function that looks through the Data.db database and fetches all the Topics for a specific Subject from it and puts them into a array that I can call and manipulate later.
+# Uses the SubjectID to select the Topics associated to that Subject as every topic should have a SubjectID that is specific to only that Subject
+# Then returns this array
 def fetchTopicsFromDatabase(subjectName):
     connection = sqlite3.connect('Data.db')  
     cursor = connection.cursor()
@@ -120,7 +127,9 @@ def fetchTopicsFromDatabase(subjectName):
 
 
 
-
+# Function that is used to add new subjects into the database when the User inputs something
+# Does this via using the Insert SQL command and taking the SubjectName and Level as inputs that are taken from a later input box
+# It then fetches all the subjects again so that it can update the screen with the newly added subject
 def addSubjectToDatabase(subjectName, level):
     connection = sqlite3.connect('Data.db')
     cursor = connection.cursor()
@@ -135,7 +144,9 @@ def addSubjectToDatabase(subjectName, level):
     
     connection.close() 
 
-
+# Function to add a Topic into the Data.db database for a specific topic
+# Does this using the cursor to fetch the SubjectID for the specific Subject and then for that SubjectID it then takes the Topic name that is inputted by the User on a later screen and inserts it into the database
+# Then commits these changes
 def addTopicToDatabase(subjectName, topicName):
     connection = sqlite3.connect('Data.db')
     cursor = connection.cursor()
@@ -149,7 +160,8 @@ def addTopicToDatabase(subjectName, topicName):
 
     connection.close()
 
-
+# Function that adds new questions, the 4 answers and a correct answer into the database
+# Does this by getting the TopicID for the topic they are trying to add questions to and then for that TopicID, inserting the new values into the Database associated with that TopicID with that Topic
 def addQuestionToDatabase(topicName, questionText, answer1Text, answer2Text, answer3Text, answer4Text, correctAnswerText):
     connection = sqlite3.connect('Data.db')
     cursor = connection.cursor()
@@ -231,7 +243,9 @@ def play(screen, font, subjects):
 
 # ----------------------------------------Subject List Functions----------------------------------------
 
-
+# Function that has its own game loop so that it can transition between it better
+# Sets up all the default buttons on the screen and then displays / blits them onto the screen
+# Fetches the Subjects from the Database and then Displays them
 def subjectList(screen, font, subjects, pageNum, totalPages):
     subjects = fetchSubjectsFromDatabase()  
     totalPages = len(subjects) // 9 + 1
@@ -269,6 +283,7 @@ def subjectList(screen, font, subjects, pageNum, totalPages):
 
         subject_buttons = [] 
 
+        # Goes through the Subject are ain order and calculates and displays what row and column each Subject should be in.
         for i, subject in enumerate(subjects[startIndex:endIndex]):
             row = i // buttonsPerRow
             col = i % buttonsPerRow
@@ -281,6 +296,10 @@ def subjectList(screen, font, subjects, pageNum, totalPages):
 
             subject_buttons.append((button, subject)) 
 
+        # Event handling
+        # Has a generic pygame quit check
+        # then checks for any Mouse inputs on any of the Buttons that are on the screen and sends / executes the specific function associated with that button
+        # For example when they press exit it takes them back to the play screen and so on so fourth
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -312,7 +331,8 @@ def subjectList(screen, font, subjects, pageNum, totalPages):
 
 
 
-
+# Function that has a new game loop as to transition between it seemlessly
+# Used to add new Subjects to the SubjectList
 def addSubject(screen, font, userText, subjects):
     pygame.display.set_caption('Add a Subject')
 
@@ -322,6 +342,11 @@ def addSubject(screen, font, userText, subjects):
 
     totalPages = len(subjects) // 9 + 1
 
+    # Main game loop that sets up the how the screen looks the same as the other screens
+    # Sets up an input box that the User can interact with in the middle of the screen, this input box can be typed in and then press enter to confirm the input
+    # Sets up 2 input boxes for the level and the Subject
+    # Updates the input boxes everytime the User types a letter so that the boxes moves with the Inputted text
+    # Also updates the screen with everything as it goes alone
     while True:
         screen.fill('#35654d')
 
@@ -356,6 +381,10 @@ def addSubject(screen, font, userText, subjects):
         screen.blit(menuText, menuRect)
         exitButton.update()
 
+        # Event handling
+        # Checks for if the User pressed a specific button to add a subject and then Brings up the Add a Subject screen
+        # Checks through every input / key press that the User does inside of the Input box and then updates it accordingly
+        # Then if the User confirms their input via pressing enter is adds the Subject to the Subject table in the database via calling the addSubjectToDatabase function
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -394,13 +423,16 @@ def addSubject(screen, font, userText, subjects):
 
         pygame.display.update()
 
-
+# Function that has a new game loop as to transition between it seemlessly
+# Used to make new pages for on the Subject screen for when the Number of subjects exceeds a specific amoount (9 per page)
 def subjectPage(screen, font, subjects, pageNum, totalPages):
     pygame.display.set_caption('Subject Page')
 
     startIndex = (pageNum - 1) * 9 
     endIndex = startIndex + 9
 
+    # Main game loop
+    # sets up the screen with the neccessary buttons similar to the other screens
     while True:
         screen.fill('#35654d')
         mousePos = pygame.mouse.get_pos()
@@ -426,7 +458,9 @@ def subjectPage(screen, font, subjects, pageNum, totalPages):
         buttonWidth = 300
         buttonHeight = 100
         buttonsPerRow = 3 
-        
+
+        # Iterates through all the Subjects in the Subject array that have been fetched from the Database and calculates what row and column they should be in depending how many Subjects there already is
+        # Then updates them
         for i, subject in enumerate(subjects[startIndex:endIndex]):
             if pageNum == 2 and i > 9:
                 row = i // buttonsPerRow 
@@ -438,6 +472,9 @@ def subjectPage(screen, font, subjects, pageNum, totalPages):
                 button = Button(image=pygame.image.load('Button.jpg'), pos=(buttonPosX, buttonPosY), width=buttonWidth, height=buttonHeight, buttonText=subject, font=font, baseColour=pygame.Color('black'))
                 button.update()
 
+        # Event handling
+        # Runs a bunch of checks to determine whether or not the User has presses certain buttons on the screen and then executes that specific functions game loop once pressed
+        # Also allows for their to be multiple pages once the Subject count gets too high and the subjects have to be displayed on multiple pages
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -461,12 +498,15 @@ def subjectPage(screen, font, subjects, pageNum, totalPages):
 
 
 
-
+# Function that has a new game loop as to transition between it seemlessly
+# Fecthes the Topics for eac Subject from the Database so that they can be displayed
 def topicList(screen, font, subjectName):
     pygame.display.set_caption('Topic List')
 
     topics = fetchTopicsFromDatabase(subjectName)
-    
+
+    # Main game loop
+    # sets up the screen with the neccessary buttons similar to the other screens
     while True:
         screen.fill('#35654d')
         mousePos = pygame.mouse.get_pos()
@@ -488,7 +528,9 @@ def topicList(screen, font, subjectName):
         
         xOffset = 450  
         xOffset2 = 1220  
-
+        
+        # Iterates through all the Topics in the Topic array that have been fetched from the Database and calculates what row and column they should be in depending how many Topics there already is
+        # Also checks whether or not a specific topic is pressed and then moves to the Addquestion screen for that topic
         for i, topic in enumerate(topics):
             row = i // buttonsPerRow  
             col = i % buttonsPerRow 
@@ -509,6 +551,8 @@ def topicList(screen, font, subjectName):
                     addQuestion(screen, font, subjectName, topic)
                     return
 
+        # Event Handling
+        # Runs a bunch of checks to determine whether or not the User has presses certain buttons on the screen and then executes that specific functions game loop once pressed 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -526,7 +570,8 @@ def topicList(screen, font, subjectName):
 
 
 
-
+# Function that has a new game loop as to transition between it seemlessly
+# Used to add new Topic to the TopicList
 def addTopic(screen, font, subjectName):
     pygame.display.set_caption('Add a Topic')
 
@@ -534,6 +579,10 @@ def addTopic(screen, font, subjectName):
     inputRect = pygame.Rect(750, 490, 300, 75) 
     activeField = 'topic'
 
+    # Main game loop
+    # sets up the screen with the neccessary buttons similar to the other screens
+    # Draws the input box for the User to be able to input the new Topic they want to add
+    # Updates the input boxes everytime the User types a letter so that the boxes moves with the Inputted text
     while True:
         screen.fill('#35654d')
 
@@ -561,6 +610,10 @@ def addTopic(screen, font, subjectName):
         screen.blit(exitButton.image, exitButton.rect)
 
 
+        # Event handling
+        # Checks for if the User pressed a specific button to add a Topic and then Brings up the Add a Topic screen
+        # Checks through every input / key press that the User does inside of the Input box and then updates it accordingly
+        # Then if the User confirms their input via pressing enter is adds the Topic to the Topic table in the database via calling the addTopicToDatabase function
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -588,10 +641,12 @@ def addTopic(screen, font, subjectName):
 
 # ----------------------------------------Adding Questions Functions---------------------------------------- 
 
-
+# Function that has a new game loop as to transition between it seemlessly
+# Used to add new Questions to a specific topic
 def addQuestion(screen, font, subjectName, topicName):
     pygame.display.set_caption('Add Question')
 
+    # Sets all the Input texts to nothing and draws the input boxes so that the User can type in the boxes
     questionText = ''
     answer1Text = ''
     answer2Text = ''
@@ -607,7 +662,13 @@ def addQuestion(screen, font, subjectName, topicName):
     correctAnswerRect = pygame.Rect(750, 790, 500, 50)
 
     activeField = 'question' 
+
     
+    # Main game loop
+    # sets up the screen with the neccessary buttons similar to the other screens
+    # Draws the input box for the User to be able to input the new Topic they want to add
+    # Has to draw a input box for every specific question, the 4 answers and the correct answer
+    # Updates the input boxes everytime the User types a letter so that the boxes moves with the Inputted text
     while True:
         screen.fill('#35654d')
 
@@ -664,6 +725,11 @@ def addQuestion(screen, font, subjectName, topicName):
         exitButton = Button(image=pygame.image.load('Exit Button.jpg'), pos=(150, 75), width=200, height=75, buttonText='', font=font, baseColour=pygame.Color('black'))
         exitButton.update()
 
+        # Event handling
+        # Checks for if the User pressed a specific button to add a Topic and then Brings up the Add a Topic screen
+        # Checks through every input / key press that the User does inside of the Input box and then updates it accordingly
+        # Then if the User confirms their input via pressing enter is adds the Topic to the Topic table in the database via calling the addTopicToDatabase function
+        # Has to do this for every input box that is on the screen
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
