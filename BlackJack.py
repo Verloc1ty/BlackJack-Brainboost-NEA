@@ -7,7 +7,7 @@ pygame.init()
 connection = sqlite3.connect("Data.db")
 cursor = connection.cursor()  
 
-
+# Variable Set up
 clock = pygame.time.Clock()
 fps = 60
 screen = pygame.display.set_mode((1920, 1080))
@@ -18,6 +18,7 @@ Initial = False
 PlayerHand = []
 DealerHand = []
 
+# Setting up both scores for Questions and the BlackJack Game
 PlayerScore = 0
 DealerScore = 0
 QuestionsRight = 0
@@ -27,15 +28,18 @@ QuestionMode = False
 from Main_Menu import Button
 
 class Card:
+    # Function that initilises the Card class with the Value and Suit of each card. Furthermore, Set up each name of the card and grabs each PNG related to that name.
     def __init__(self, value, suit):
         self.value = value
         self.suit = suit
         self.name = f"{value} of {suit}"
         self.image_filename = f'{value}_of_{suit}.png'
 
+    
     def __repr__(self):
         return self.name
 
+    # Function that gets the Value of the Card, returns the Value as the corresponding Value of the card. But returns 10 if Jack, King or Queen is pulled and 11 if an Ace is pulled.
     def card_value(self):
         if self.value in ['J', 'Q', 'K']:
             return 10
@@ -46,34 +50,51 @@ class Card:
 
 
 class Deck:
+    # Function that sets up what a normal deck of cards should be. With 4 suits and 13 cards per suit.
+    # Furthermore, creates a cards array that has each Card that has a Suit and a value corresponding to it. Then calls the Shuffle function to shuffle the cards in each index of the array so the card order is random.
     def __init__(self):
         suits = ['hearts', 'diamonds', 'clubs', 'spades']
         values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         self.cards = [Card(value, suit) for suit in suits for value in values]
         self.shuffle()
 
+    # Function that shuffes the order of cards in the card array
     def shuffle(self):
         random.shuffle(self.cards)
 
+    # Function that Removes (pops) an item from the array of cards for each card in the Array and stops when there is no more cards in the array.
     def DealCard(self):
         return self.cards.pop() if self.cards else None
 
+    # Calculates how many cards are in the card array at any given time.
     def __len__(self):
         return len(self.cards)
 
 
 class CardImage():
+    # Function that Initialises the class.
+    # It also transforms the size of the Image using pygame to specified pixel height and widths
+    # Assigns X and Y cordinates to to be chosen where the Rectangle is wanted to be placed
+    # Sets up a rectangle around the Image from a center of the X and Y cords, this allows it to function as a button in future
     def __init__(self, image, pos):
         self.image = pygame.transform.scale(image, (175, 225))
         self.XCord = pos[0]
         self.YCord = pos[1]
         self.rect = self.image.get_rect(center=(self.XCord, self.YCord))
 
+    # Function that updates the screen with the Images, using blit fro pygame to put the Image of the card and its rectangle that allows for future processing around it
     def Update(self):
         if self.image is not None:
             screen.blit(self.image, self.rect)
 
 
+# ----------------------------------------------Main Functions----------------------------------------------------------------
+
+
+# Function that Sets up a array of Buttons that are to be pressed in the BlackJackGame
+# First if the Active flag is not active (meaning it is false) then it will draw the Deal Hand button on the screen as well as the Amount of Questions the Player gets right or wrong. It will also Draw a Rectangle and Put Deal Hand text inside that Rectangle button
+# Then if the Active flag is active, it will Draw the Hit, Stand and Replay retangles on the screen. Also appends the Hit, Stand and Replay buttons into the Button array.
+# Finally returns the List of Buttons / Rectangles that there is.
 def DrawCard(active, QuestionsRight, QuestionsWrong):
     ButtonList = []
     if not active:
@@ -110,7 +131,9 @@ def DrawCard(active, QuestionsRight, QuestionsWrong):
     return ButtonList
 
 
-
+# Function that Deals the cards to the Player's and Dealer's hand via using the DealCard function to Pop cards off the Card array randomly and putting it into the Player's and Dealer's Hand respectively
+# Also uses CalculateScore Function to assign the Player and Dealer a hand score depending on what cards they have
+# Finally Returns all these values
 def DealHand(deck):
     global PlayerHand, DealerHand, PlayerScore, DealerScore
     PlayerHand.append(deck.DealCard())
@@ -124,7 +147,10 @@ def DealHand(deck):
 
     return PlayerHand, DealerHand, PlayerScore, DealerScore
 
-
+# Function that Calculates the Scores for every hand that can be given in BlackJack
+# Does this by first taking every card in the hand and looping through it, adding the cards value (Calculated via the card_value function) to the score. But if the card is an Ace it increments the Ace count by 1.
+# Then if the Hand has an Ace in it, and the score is less that 21 is subtracts 10 from the score to indicate the Hand has chosen the Ace to be a 1 instead of a 11 just like in BlackJack
+# Then Returns the Score if it is less than 21, because there is something else that is displayed later for when they Bust in Blackjack.
 def CalculateScore(hand):
     score = 0
     ace_count = 0
@@ -141,6 +167,14 @@ def CalculateScore(hand):
     return score if score <= 21 else None
 
 
+
+# Function that draws the cards on the screen for each of the Cards removed previously from the card array and put into the Player and Dealer card array
+# Loops through Player and Dealers hand, and displays each card that is in the Respective hands next to each other (Uses .Update() to update the screen). Each new card goes to the right of the last one
+# Then it calculates whether or not the Player has Busted (Indicated by if CalculateScore returns none), Hit BlackJack (If the PlayersScore is 21) or just a score (if the PlayerScore < 21)
+# Then it calculates whether or not the Dealer has Busted (Indicated by if CalculateScore returns none), Hit BlackJack (If the DealersScore is 21) or just a score (if the DealerScore < 21)
+# With it Updating the screen using .blit to upload the scores to the screen for the User to see
+
+# Also Uses the QuestionsRight and QuestionsWrong variables to indicate / display how many questions the User has answered correct or incorrectly
 def CardDrawing(PlayerHand, DealerHand, PlayerScore, DealerScore, QuestionsRight, QuestionsWrong):
     PlayerCards = []
     DealerCards = []
@@ -183,7 +217,9 @@ def CardDrawing(PlayerHand, DealerHand, PlayerScore, DealerScore, QuestionsRight
     return PlayerCards, DealerCards, PlayerScore, DealerScore
 
 
-
+# Function that Chooses who wins the Game
+# Does this by taking the PlayerScore and DealerScore and comparing them in Different ways to determine who wins
+# Follows Main BlackJack logic, of if Player busted then dealer wins etc...
 def DetermineWinner(PlayerScore, DealerScore):
     if PlayerScore is None:
         return "Dealer Wins! Player Busted"
@@ -203,7 +239,9 @@ def DetermineWinner(PlayerScore, DealerScore):
         return "It's a Tie!"
 
 
-
+# Function that displays who won the BlackJack Game
+# Does this by creating a new screen that displays how many questiosn they have gotten Right and or Wrong
+# Then also waits for the User to click the screen so it doesnt automatically go away. Also if you quit / press the close button the Python program stops
 def GameOverScreen(winner, screen):
     screen.fill('#35654d')
 
@@ -228,7 +266,9 @@ def GameOverScreen(winner, screen):
                 WaitingForClick = False
                 return True
 
-
+# Function that Draws the Exit button that stops the Game of BlackJack / Dealing of Cards and takes the User back to the Main menu parts of the Program
+# Does this by setting a bunch of Pixel Measurements / Cordinates and then using them to draw a Rectanlge at thoses cordinates of a specific size
+# Then .blits it to the screen so that the screen is updated and then returns it so that it can be tested for whether or not a User has pressed it
 def DrawExitButton(screen):
     font = pygame.font.SysFont('Arial', 36)
     exit_text = font.render('Exit', True, (255, 255, 255))  
@@ -236,15 +276,18 @@ def DrawExitButton(screen):
     button_height = 50
     button_x = 1770 
     button_y = 950  
-    pygame.draw.rect(screen, (255, 0, 0), (button_x, button_y, button_width, button_height))  # Red button
-    screen.blit(exit_text, (button_x + 40, button_y + 10))  # Position the text inside the button
-    return pygame.Rect(button_x, button_y, button_width, button_height)  # Return the button rectangle for collision detection
+    pygame.draw.rect(screen, (255, 0, 0), (button_x, button_y, button_width, button_height))
+    screen.blit(exit_text, (button_x + 40, button_y + 10)) 
+    return pygame.Rect(button_x, button_y, button_width, button_height)
 
 
 
 # /////////////////////////////////////////Question Mode/////////////////////////////////////////
 
 
+# Function that is used to Make the Questions text doesnt Overspill into the Other boxes
+# Does this by splitting each answers text into seperate words and looping through all of these words and test their width to see if they can fit on the same line
+# Then it appends the words into the Currentline Text and then Returns lines
 def WrapText(text, font, MaxWidth):
     words = text.split(' ')
     lines = []
@@ -264,7 +307,10 @@ def WrapText(text, font, MaxWidth):
     
     return lines
 
-
+# Function to Ask questions during the Game of BlackJack
+# Uses the inQuestionScreen for debugging to make sure the screen only pops up upon pressing a blackjack action button
+# Gets the Relavent things from the Data.db database's Questions table
+# For these different things it ha gotten from the Database, 
 def Question(QuestionsRight, QuestionsWrong, screen, cursor):
     global inQuestionScreen
 
