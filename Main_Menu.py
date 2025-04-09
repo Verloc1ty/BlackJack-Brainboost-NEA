@@ -154,12 +154,16 @@ def addQuestionToDatabase(topicName, questionText, answer1Text, answer2Text, ans
 
 # ----------------------------------------Menu Functions----------------------------------------
 
-
+# Function for the Play screen that contains its own Game loop so that we can seemlessly transition between the different screens
 def play(screen, font, subjects):
     pygame.display.set_caption('Play')
 
-    subjects = fetchSubjectsFromDatabase()
+    subjects = fetchSubjectsFromDatabase() # Fetches the Subjects from the Database so that it can display them on the Play screen
 
+    # Game loop for the Play screen
+    # This draws an exit button on the screen using the Button class, so that when pressed it takes them back a page back to the main menu
+    # Also displays a title to tell the User what the screen is for
+    # Iterates through all the subjects that is has gotten from the Database and Displays them in a button in a column to pressed
     while True:
         screen.fill('#35654d')
         mousePos = pygame.mouse.get_pos()
@@ -185,6 +189,10 @@ def play(screen, font, subjects):
         screen.blit(menuText, menuRect)
         exitButton.update()
 
+        # Event Handling for the Game loop
+        # Has a generic pygame quit input check
+        # Has a check that if the User presses any of the Buttons for the Subjects on the screen, that it is to execute the Blackjack function which brings the user to the BlackJack game.
+        # Has a check that if the User presses the exit button it brrigs them back to the Main menu screen by calling the Main Menu function which has its own game loop
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
@@ -714,10 +722,11 @@ def addQuestion(screen, font, subjectName, topicName):
 
 # ----------------------------------------Main Menu----------------------------------------
 
-
+# Function for the Main Menu screen that has its own Game loop inside of it so the Menu can seemlessly transition between them
 def mainMenu(screen, font):
-    pygame.display.set_caption('Main Menu')
+    pygame.display.set_caption('Main Menu')   
 
+    # Main Game loop for the Main menu, that when ran Displays the 3 menu buttons as well as the 4 card images at various different parts of the screen (Uses .Update to blit them onto the screen)
     while True:
         screen.fill('#35654d')
         mousePos = pygame.mouse.get_pos()
@@ -743,6 +752,8 @@ def mainMenu(screen, font):
         card3.Update()
         card4.Update()
 
+        # Event Handling with a generic pygame quit event check
+        # Also has checks to see if the User has pressed a mouse click on any of the 3 Buttons and calls the relevent functions for said button when pressed
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
