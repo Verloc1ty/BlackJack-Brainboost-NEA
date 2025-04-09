@@ -24,7 +24,11 @@ totalPages = len(subjects) // 9 + 1
 
 # ----------------------------------------Classes----------------------------------------
 
+# a Class for all the buttons that I am using inside of the Main menu screen
 class Button():
+    # Function that Initilises the class and sets up key variables I will need to display the Button
+    # Uses the width and height to scale the button down to the same size everytime it is used
+    # The text is specified when the Class is called for example text colour = 'white' and  Button text = 'Test'
     def __init__(self, image, pos, width, height, buttonText, font, baseColour):
         self.image = pygame.transform.scale(image, (width, height))
         self.xCord = pos[0]
@@ -37,11 +41,17 @@ class Button():
         self.rect = self.image.get_rect(center=(self.xCord, self.yCord))
         self.textRect = self.text.get_rect(center=(self.xCord, self.yCord))
 
+    # Function that Blits / shares all the buttons to the screen of the program so that the User can see them
+    # Does this by asking if it is an image and then if it is Blitting it onto the page
+    # Then it updates the screen with the text no matter what
     def update(self):
         if self.image is not None:
             screen.blit(self.image, self.rect)
         screen.blit(self.text, self.textRect)
 
+    # Fuunction that checks for any inputs that are carried out onto the screen
+    # Does this by checking if the mouse has hovered over any of the rectangle and if it has returning true
+    # If the mouse hasnt hovered over any of the square / box it returns false
     def checkInput(self, position):
         if self.rect.left <= position[0] <= self.rect.right and self.rect.top <= position[1] <= self.rect.bottom:
             return True
@@ -153,6 +163,7 @@ def addQuestionToDatabase(topicName, questionText, answer1Text, answer2Text, ans
 
 
 # ----------------------------------------Menu Functions----------------------------------------
+
 
 # Function for the Play screen that contains its own Game loop so that we can seemlessly transition between the different screens
 def play(screen, font, subjects):
