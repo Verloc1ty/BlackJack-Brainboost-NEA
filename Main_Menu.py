@@ -1,3 +1,4 @@
+# Imports, Initialising pygame and connect to the Data.db file
 import sys
 import pygame
 import sqlite3
@@ -8,6 +9,7 @@ pygame.init()
 connection = sqlite3.connect("Data.db")
 cursor = connection.cursor()  
 
+# Important Variable Set for the Program
 screen = set_mode((1920, 1080))
 clock = pygame.time.Clock()
 fps = 60
@@ -151,6 +153,8 @@ def addQuestionToDatabase(topicName, questionText, answer1Text, answer2Text, ans
 
 
 # ----------------------------------------Menu Functions----------------------------------------
+
+
 def play(screen, font, subjects):
     pygame.display.set_caption('Play')
 
@@ -556,6 +560,9 @@ def addTopic(screen, font, subjectName):
                         return
 
         pygame.display.update()
+
+
+# ----------------------------------------Adding Questions Functions---------------------------------------- 
 
 
 def addQuestion(screen, font, subjectName, topicName):
