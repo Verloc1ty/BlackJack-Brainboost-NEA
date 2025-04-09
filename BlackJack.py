@@ -307,10 +307,11 @@ def WrapText(text, font, MaxWidth):
     
     return lines
 
+
 # Function to Ask questions during the Game of BlackJack
 # Uses the inQuestionScreen for debugging to make sure the screen only pops up upon pressing a blackjack action button
 # Gets the Relavent things from the Data.db database's Questions table
-# For these different things it ha gotten from the Database, 
+# For these different answers it is wrapping then using Wraptext() to make sure they fit into the Rectangle and also creating the Question box at the top of the screen
 def Question(QuestionsRight, QuestionsWrong, screen, cursor):
     global inQuestionScreen
 
@@ -341,12 +342,14 @@ def Question(QuestionsRight, QuestionsWrong, screen, cursor):
         WrappedAnswer3 = WrapText(answer3, font, box_width - 40)
         WrappedAnswer4 = WrapText(answer4, font, box_width - 40)
 
+        # Function that Uses the Amount of Lines each answer texts up to Render each Answer on a seperate line inside of Rectanlge and then Displays it on the screen.
         def RenderAnswer(AnswerLines, x, y):
             line_height = font.get_height() + margin  
             for i, line in enumerate(AnswerLines):
                 AnswerSurface = font.render(line, True, (0, 0, 0))
                 screen.blit(AnswerSurface, (x + 20, y + i * line_height))  
 
+        # Displays the 4 different answer's boxes and then Blits the text for the answers inside of those boxes.
         Answer1 = pygame.draw.rect(screen, 'Red', (0, 540, box_width, box_height), 0, 5)
         Answer2 = pygame.draw.rect(screen, 'Blue', (0, 810, box_width, box_height), 0, 5)
         Answer3 = pygame.draw.rect(screen, 'Yellow', (960, 540, box_width, box_height), 0, 5)
@@ -361,6 +364,8 @@ def Question(QuestionsRight, QuestionsWrong, screen, cursor):
 
         QuestionAnswered = False  
 
+        # This is the logic of whether or not the User has clicked the correct answer or a wrong answer. Uses Question answered to make sure the question screen stays up until the User has answered the Prompted Question
+        # Uses simple Comparisons between the Answers to correct_answer and displays the appropriate Correct or Incorrect screen when answered.
         while not QuestionAnswered:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -405,7 +410,8 @@ def Question(QuestionsRight, QuestionsWrong, screen, cursor):
 
             pygame.display.update()
 
-
+# Function that is used to display the Correct Screen when the User presses the correct answer out of all the Answers given
+# Does this by setting up a new screen that says Correct and Click to continue on it and waits for the User to click the screen again to get rid of it.
 def Correct(screen):
     global QuestionsRight, inQuestionScreen 
     screen.fill('#00c121')
@@ -417,6 +423,8 @@ def Correct(screen):
     screen.blit(ClickText, (920, 980))
     pygame.display.update()
 
+    # Input Handling to test whether or not the User is still on that screen and so it doenst automatically go away.
+    # Resets the flags also so it can go back to the Main BlackJackg game
     WaitingForClick = True
     while WaitingForClick:
         for event in pygame.event.get():
@@ -426,10 +434,12 @@ def Correct(screen):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 QuestionsRight += 1 
                 WaitingForClick = False 
-                inQuestionScreen = False  # Reset flag so we can go back to Blackjack screen
+                inQuestionScreen = False
                 return 
 
-
+# Function to display Whether or not the User has gotten an Asnwer that is displayed Wrong
+# Does this by Displaying a Red screen that says Incorrect as well as the Correct Answer so the User knows what the correct answer actually is
+# Uses Pygame to update the screen with the relavent variables / things created
 def Incorrect(screen, CorrectAnswer):
     global QuestionsWrong, inQuestionScreen  
     screen.fill('#f40000')
@@ -443,6 +453,8 @@ def Incorrect(screen, CorrectAnswer):
     screen.blit(ClickText, (880, 900))
     pygame.display.update()
 
+    # Input handling to check whether or not the User has clicked the Incorrect screen so that it can go away and bring them back to the Main BlackJack Game
+    # Resets the flags also so it can go back to the Main BlackJackg game
     WaitingForClick = True
     while WaitingForClick:
         for event in pygame.event.get():
@@ -452,7 +464,7 @@ def Incorrect(screen, CorrectAnswer):
             if event.type == pygame.MOUSEBUTTONDOWN:
                 QuestionsWrong += 1  
                 WaitingForClick = False  
-                inQuestionScreen = False  # Reset flag so we can go back to Blackjack screen
+                inQuestionScreen = False 
                 return
   
 
@@ -461,31 +473,41 @@ def Incorrect(screen, CorrectAnswer):
 
 # /////////////////////////////////////////Main Game////////////////////////////////////////
 
+
+
+# Sets thiis to false as to make it so the question screens dont pop up
 inQuestionScreen = False  
 
+# Main Game loop
+# Sets the screen to the Deal Hand screen, so that the User can press it to start the BlackJack game
 while run:
     screen.fill('#35654d')
     clock.tick(fps)
     MousePos = pygame.mouse.get_pos()
     button = DrawCard(active, QuestionsRight, QuestionsWrong)
 
-    # Add the Exit Button
     exit_button_rect = DrawExitButton(screen)
 
+    # Uses this to skip the whole rest of the loop (The BlackJack game) when the Question screen pops up. This allows them to not clash with each other and happen one after another instead of simultaneously which would cause errors
     if inQuestionScreen:
-        continue  # Skip the rest of the loop while in question screen
-
+        continue
+    # Initial Used to Initiate the Deal Hand Button as the Blackjack hands havent been dealt yet so the Deal Hand button is required as to deal them out
     if Initial:
         CardDrawing(PlayerHand, DealerHand, PlayerScore, DealerScore, QuestionsRight, QuestionsWrong)
 
+
+    # Event Handling
+    # Has a Generic Pygame quit event check, to check if someone closes the program
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
-
+            
+        # Checks for when and if someone presses the Exit button at any time so that it can bring them back to the main menu of the program
         if event.type == pygame.MOUSEBUTTONDOWN:
-            if exit_button_rect.collidepoint(event.pos):  # Check if the Exit button is clicked
-                run = False  # Exit the game
+            if exit_button_rect.collidepoint(event.pos): 
+                run = False
 
+            # Uses active to tell the program that the BlackJack game hasnt started and the cards need to be dealt out, so it displays the Deal Hand button for the User to press to Deal out the Cards to the Player and Dealer
             if not active:
                 if button[0].collidepoint(event.pos):
                     active = True
@@ -501,6 +523,11 @@ while run:
                     CardDrawing(PlayerHand, DealerHand, PlayerScore, DealerScore, QuestionsRight, QuestionsWrong)
                     clock.tick(fps)
 
+            # When the Game is Active (Active = True), then it checks to whether or not the Mouse has clicked on the rectangle with "Hit", "Stand" or "Replay" and does the specific things
+            # Upon pressing Hit the Player is Dealt a card (Popped out of the Card array) and the value of the card is added to the PlayerScore and then a Question is displayed for the User to answer due to QuestionMode being flagged as True
+            # Upon Pressing Stand it Deals the Dealer a card if the Dealers hand total is less than 17 (standard blackjack rules), also adding the value of the card to the DealerScore and then asks the User a question.
+            # Upon pressing Replay, it changes the Active flag to false and clears all variables for the Game to start again, as it brings you back to the Deal hand screen
+            # After Pressing stand it also Determines who won the game and displays the Gameover screen depending on whether or not the Player or Dealerhas won
             if active:
                 if len(button) > 1 and button[1].collidepoint(event.pos):
                     if PlayerScore is not None and PlayerScore < 21:
