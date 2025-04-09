@@ -57,7 +57,12 @@ class Button():
             return True
         return False
 
+
 class CardImage():
+    # Function that Initialises the class.
+    # It also transforms the size of the Image using pygame to specified pixel height and widths
+    # Assigns X and Y cordinates to to be chosen where the Rectangle is wanted to be placed
+    # Sets up a rectangle around the Image from a center of the X and Y cords, this allows it to function as a button in future
     def __init__(self, image, pos):
         self.image = pygame.transform.scale(image, (175, 275))
         self.xCord = pos[0]
